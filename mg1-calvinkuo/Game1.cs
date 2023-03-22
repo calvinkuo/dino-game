@@ -210,8 +210,16 @@ namespace mg1_calvinkuo
                 }
                 if (minMovement == gapBottom)
                 {
-                    hitTop = true;
-                    System.Diagnostics.Debug.WriteLine($"hitTop!");
+                    if (veloc.Y >= 0)
+                    {
+                        hitTop = true;
+                        System.Diagnostics.Debug.WriteLine($"hitTop!");
+                    }
+                    else
+                    {
+                        other.Y = rect.Bottom;
+                        veloc.Y = 1f;
+                    }
                 }
             }
             return other.Location;
