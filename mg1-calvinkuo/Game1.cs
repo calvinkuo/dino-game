@@ -2,28 +2,274 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace mg1_calvinkuo
 {
+    abstract class SpriteBox
+    {
+        public Vector2 pos;
+        public abstract Texture2D SpriteSheet { get; set; }
+        public abstract Rectangle SpriteSheetCoords { get; }
+        public float X { get { return pos.X; } }
+        public float Y { get { return pos.Y; } }
+        public float Width { get { return SpriteSheetCoords.Width; } }
+        public float Height { get { return SpriteSheetCoords.Height; } }
+        public Rectangle Rectangle { get { return new Rectangle((int)pos.X, (int)pos.Y, (int)(Width * Game1.scale.X), (int)(Height * Game1.scale.Y)); } }
+
+        public SpriteBox(Vector2 pos)
+        {
+            this.pos = pos;
+        }
+        
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            spriteBatch.Draw(SpriteSheet, pos, SpriteSheetCoords, Color.White, 0f, new Vector2(0, 0), Game1.scale, SpriteEffects.None, 0f);
+        }
+
+        public abstract Point HandleCollision(Rectangle other, ref Vector2 veloc, ref bool jumping);
+        public abstract void Update();
+    }
+
+    abstract class Platform : SpriteBox
+    {
+        protected Platform(Vector2 pos) : base(pos)
+        {
+        }
+
+        public override void Update()
+        {
+        }
+    }
+
+    class WoodenPlatform : Platform
+    {
+        public WoodenPlatform(Vector2 pos) : base(pos)
+        {
+        }
+
+        public override Point HandleCollision(Rectangle other, ref Vector2 veloc, ref bool jumping)
+        {
+            var rect = this.Rectangle;
+            if (other.Intersects(rect))
+            {
+                var gapRight = other.Left - rect.Right;
+                var gapLeft = rect.Left - other.Right;
+                var gapTop = rect.Top - other.Bottom;
+                var gapBottom = other.Top - rect.Bottom;
+                System.Diagnostics.Debug.WriteLine($"{gapRight}, {gapLeft}, {gapTop}, {gapBottom}");
+
+                var minMovement = gapTop;
+                foreach (int i in new int[] { /* gapRight, gapLeft, */ gapTop, gapBottom })
+                {
+                    if (i < 0 && i > minMovement)
+                    {
+                        minMovement = i;
+                    }
+                }
+                //if (minMovement == gapRight)
+                //{
+                //    other.Y = rect.Bottom;
+                //    veloc.Y = 0f;
+                //    jumping = true;
+                //}
+                //if (minMovement == gapLeft)
+                //{
+                //    other.Y = rect.Bottom;
+                //    veloc.Y = 0f;
+                //    jumping = true;
+                //}
+                if (minMovement == gapTop)
+                {
+                    other.Y = rect.Top - other.Height;
+                    veloc.Y = 0f;
+                    jumping = false;
+                }
+                if (minMovement == gapBottom)
+                {
+                    other.Y = rect.Bottom;
+                    veloc.Y = 0f;
+                    jumping = true;
+                }
+            }
+            return other.Location;
+        }
+
+        private static Texture2D spriteSheet;
+        public override Texture2D SpriteSheet {
+            get { return spriteSheet; }
+            set { spriteSheet = value; }
+        }
+        private static Rectangle spriteLoc = new Rectangle(272, 16, 48, 5);
+
+        public override Rectangle SpriteSheetCoords {
+            get { return spriteLoc; }
+        }
+    }
+
+    class StonePlatform : Platform
+    {
+        public StonePlatform(Vector2 loc) : base(loc)
+        {
+        }
+
+
+        public override Point HandleCollision(Rectangle other, ref Vector2 veloc, ref bool jumping)
+        {
+            var rect = this.Rectangle;
+            if (other.Intersects(rect))
+            {
+                var gapTop = rect.Top - other.Bottom;
+                var gapBottom = other.Top - rect.Bottom;
+                System.Diagnostics.Debug.WriteLine($"{gapTop}, {gapBottom}");
+
+                var minMovement = gapTop;
+                foreach (int i in new int[] { gapTop, gapBottom })
+                {
+                    if (i < 0 && i > minMovement)
+                    {
+                        minMovement = i;
+                    }
+                }
+                if (minMovement == gapTop && veloc.Y > 0)
+                {
+                    other.Y = rect.Top - other.Height;
+                    veloc.Y = 0f;
+                    jumping = false;
+                }
+            }
+            return other.Location;
+        }
+
+        private static Texture2D spriteSheet;
+        public override Texture2D SpriteSheet
+        {
+            get { return spriteSheet; }
+            set { spriteSheet = value; }
+        }
+        private static Rectangle spriteLoc = new Rectangle(272, 32, 48, 5);
+        public override Rectangle SpriteSheetCoords
+        {
+            get { return spriteLoc; }
+        }
+    }
+
+    class Box : SpriteBox
+    {
+        public Box(Vector2 pos) : base(pos)
+        {
+        }
+
+        private static Texture2D spriteSheet;
+        public override Texture2D SpriteSheet
+        {
+            get { return spriteSheet; }
+            set { spriteSheet = value; }
+        }
+        private static Rectangle spriteLoc = new Rectangle(192, 144, 16, 16);
+        public override Rectangle SpriteSheetCoords
+        {
+            get { return spriteLoc; }
+        }
+
+        public Vector2 veloc = new Vector2(0f, 0f);
+        private Vector2 accel = new Vector2(0f, 1f);
+        public bool jumping = false;
+        public bool hitTop = false;
+
+        public override Point HandleCollision(Rectangle other, ref Vector2 veloc, ref bool jumping)
+        {
+            var rect = this.Rectangle;
+            if (other.Intersects(rect))
+            {
+                var gapRight = other.Left - rect.Right;
+                var gapLeft = rect.Left - other.Right;
+                var gapTop = rect.Top - other.Bottom;
+                var gapBottom = other.Top - rect.Bottom;
+                System.Diagnostics.Debug.WriteLine($"{gapRight}, {gapLeft}, {gapTop}, {gapBottom}");
+
+                var minMovement = gapRight;
+                foreach (int i in new int[] { gapRight, gapLeft, gapTop, gapBottom })
+                {
+                    if (i < 0 && i > minMovement)
+                    {
+                        minMovement = i;
+                    }
+                }
+                if (minMovement == gapRight)
+                {
+                    this.pos.X = other.Left - this.Rectangle.Width;
+                    this.veloc.X = 0f;
+                    veloc.Y = 0f;
+                    jumping = true;
+                }
+                if (minMovement == gapLeft)
+                {
+                    this.pos.X = other.Right;
+                    this.veloc.X = 0f;
+                    veloc.Y = 0f;
+                    jumping = true;
+                }
+                if (minMovement == gapTop)
+                {
+                    other.Y = rect.Top - other.Height;
+                    veloc.Y = 0f;
+                    jumping = false;
+                }
+                if (minMovement == gapBottom)
+                {
+                    other.Y = rect.Bottom;
+                    veloc.Y = 0f;
+                    jumping = true;
+                    hitTop = true;
+                }
+            }
+            return other.Location;
+        }
+
+        public override void Update()
+        {
+            pos += veloc;
+            veloc += accel;
+            if (pos.Y > Game1.GameBounds.Y - (Height * Game1.scale.Y))
+            {
+                pos.Y = Game1.GameBounds.Y - (Height * Game1.scale.Y);
+                veloc.Y = 0f;
+                jumping = false;
+            }
+
+            // respawn if it goes off-screen
+            var rect = Rectangle;
+            if (pos.X < -rect.Width * 0.75f || rect.Right > Game1.GameBounds.X + rect.Width * 0.75f)
+            {
+                pos = new Vector2(350, -100);
+                veloc.X = veloc.Y = 0f;
+            }
+        }
+    }
+
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-        private Point GameBounds = new Point(1280, 720); //window resolution
+        public static Point GameBounds = new Point(1280, 720); //window resolution
 
         private float timer = 0f;
         private int threshold = (int)(150f / speed);
         private Vector2 pos = new Vector2(0f, 0f);
         private Vector2 veloc = new Vector2(0f, 0f);
         private Vector2 accel = new Vector2(0f, 1f);
+        private bool canJump = true;
         private bool flip = false;
         private bool jumping = false;
         private bool kicking = false;
-        private Vector2 scale = new Vector2(4, 4);
+        public static Vector2 scale = new Vector2(4, 4);
         private const float speed = 1.5f;
         private Random rand = new Random();
 
+        private SpriteBox[] gameObjects;
         private Texture2D dinoSheet;
+        private Texture2D terrainSheet;
         private Animation currentAnimation = Animation.Idle;
         private Animation? nextAnimation = null;
         private int currentAnimationIndex = 0;
@@ -62,6 +308,19 @@ namespace mg1_calvinkuo
             base.Initialize();
             pos.X = GameBounds.X / 2 - (12 * scale.X);
             pos.Y = GameBounds.Y - (21 * scale.Y);
+            gameObjects = new SpriteBox[] {
+                new Box(new Vector2(350, 200)),
+                new StonePlatform(new Vector2(300, 250)),
+                new StonePlatform(new Vector2(900, 250)),
+                new WoodenPlatform(new Vector2(600, 300)),
+                new WoodenPlatform(new Vector2(100, 450)),
+                new StonePlatform(new Vector2(500, 500)),
+                new WoodenPlatform(new Vector2(950, 450)),
+            };
+            foreach (SpriteBox spriteBox in gameObjects)
+            {
+                spriteBox.SpriteSheet = terrainSheet;
+            }
         }
 
         protected override void LoadContent()
@@ -71,6 +330,7 @@ namespace mg1_calvinkuo
             // TODO: use this.Content to load your game content here
             
             dinoSheet = Content.Load<Texture2D>("Images/vita");
+            terrainSheet = Content.Load<Texture2D>("Images/terrain");
             int i = 0, j;
             foreach (Rectangle[] anim in animation)
             {
@@ -88,6 +348,11 @@ namespace mg1_calvinkuo
                 Exit();
 
             // TODO: Add your update logic here
+            if (Keyboard.GetState().IsKeyUp(Keys.W))
+            {
+                canJump = true;
+            }
+
             if (!jumping && !kicking && currentAnimation != Animation.Kick && Keyboard.GetState().IsKeyDown(Keys.Space))
             {
                 kicking = true;
@@ -147,8 +412,9 @@ namespace mg1_calvinkuo
                     nextAnimation = null;
                     veloc.X = 0f;
                 }
-                if (!jumping && !kicking && Keyboard.GetState().IsKeyDown(Keys.W))
+                if (canJump && !jumping && !kicking && Keyboard.GetState().IsKeyDown(Keys.W))
                 {
+                    canJump = false;
                     jumping = true;
                     currentAnimation = Animation.Dash;
                     nextAnimation = null;
@@ -205,6 +471,40 @@ namespace mg1_calvinkuo
 
             timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
 
+            foreach (var gameObject in gameObjects)
+            {
+                var newPos = gameObject.HandleCollision(new Rectangle((int)(pos.X + 8 * scale.X), (int)(pos.Y + 6 * scale.X), (int)(8 * scale.X), (int)(15 * scale.Y)), ref veloc, ref jumping);
+                pos.X = newPos.X - 8 * scale.X;
+                pos.Y = newPos.Y - 6 * scale.X;
+                gameObject.Update();
+            }
+
+            Box box = (Box)gameObjects[0];
+            foreach (var gameObject in gameObjects[1..])
+            {
+                var newPos = gameObject.HandleCollision(box.Rectangle, ref box.veloc, ref box.jumping);
+                box.pos.X = newPos.X;
+                box.pos.Y = newPos.Y;
+            }
+            box.Update();
+
+            // kick the box
+            if (kicking && !flip && Math.Abs(box.Rectangle.Left - (pos.X + 16 * scale.X)) < 1 && Math.Abs(box.Rectangle.Bottom - (pos.Y + 21 * scale.Y)) < 3)
+            {
+                box.veloc.X += 3f;
+            }
+            if (kicking && flip && Math.Abs(box.Rectangle.Right - (pos.X + 8 * scale.X)) < 1 && Math.Abs(box.Rectangle.Bottom - (pos.Y + 21 * scale.Y)) < 3)
+            {
+                box.veloc.X -= 3f;
+            }
+            if (box.hitTop)
+            {
+                currentAnimation = Animation.Hurt;
+                nextAnimation = Animation.Idle;
+                currentAnimationIndex = 0;
+                box.hitTop = false;
+            }
+
             base.Update(gameTime);
         }
 
@@ -214,6 +514,10 @@ namespace mg1_calvinkuo
 
             // TODO: Add your drawing code here
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+            foreach (var gameObject in gameObjects)
+            {
+                gameObject.Draw(_spriteBatch);
+            }
             _spriteBatch.Draw(dinoSheet, pos, animation[(int)currentAnimation][currentAnimationIndex], Color.White, 0f, new Vector2(0, 0), scale,
                 flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
             _spriteBatch.End();
