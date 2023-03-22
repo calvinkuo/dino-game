@@ -468,26 +468,32 @@ namespace mg1_calvinkuo
             veloc.X += accel.X;
             pos.Y += veloc.Y;
             veloc.Y += accel.Y;
-            if (pos.X < (-5 * scale.X))
+            if (pos.X < -((24 - 5) * scale.X) || pos.X > Game1.GameBounds.X + (-5 * scale.X))
             {
-                pos.X = (-5 * scale.X);
-                if (currentAnimation == Animation.Dash || currentAnimation == Animation.Walk)
-                {
-                    currentAnimation = Animation.Hurt;
-                    nextAnimation = Animation.Idle;
-                    currentAnimationIndex = 0;
-                }
+                pos = new Vector2(350, -100);
+                veloc.X = veloc.Y = 0f;
+                jumping = true;
             }
-            if (pos.X > GameBounds.X - ((24 - 5) * scale.X))
-            {
-                pos.X = GameBounds.X - ((24 - 5) * scale.X);
-                if (currentAnimation == Animation.Dash || currentAnimation == Animation.Walk)
-                {
-                    currentAnimation = Animation.Hurt;
-                    nextAnimation = Animation.Idle;
-                    currentAnimationIndex = 0;
-                }
-            }
+            //if (pos.X < (-5 * scale.X))
+            //{
+            //    pos.X = (-5 * scale.X);
+            //    if (currentAnimation == Animation.Dash || currentAnimation == Animation.Walk)
+            //    {
+            //        currentAnimation = Animation.Hurt;
+            //        nextAnimation = Animation.Idle;
+            //        currentAnimationIndex = 0;
+            //    }
+            //}
+            //if (pos.X > GameBounds.X - ((24 - 5) * scale.X))
+            //{
+            //    pos.X = GameBounds.X - ((24 - 5) * scale.X);
+            //    if (currentAnimation == Animation.Dash || currentAnimation == Animation.Walk)
+            //    {
+            //        currentAnimation = Animation.Hurt;
+            //        nextAnimation = Animation.Idle;
+            //        currentAnimationIndex = 0;
+            //    }
+            //}
             if (pos.Y > GameBounds.Y - ((24 - 3) * scale.Y))
             {
                 pos.Y = GameBounds.Y - ((24 - 3) * scale.Y);
