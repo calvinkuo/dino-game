@@ -218,9 +218,9 @@ namespace mg1_calvinkuo
                 }
                 if (minMovement == gapBottom)
                 {
-                    other.Y = rect.Bottom;
-                    veloc.Y = 0f;
-                    jumping = true;
+                    // other.Y = rect.Bottom;
+                    // veloc.Y = 0f;
+                    // jumping = true;
                     hitTop = true;
                 }
             }
