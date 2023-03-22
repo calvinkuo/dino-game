@@ -58,7 +58,7 @@ namespace mg1_calvinkuo
                 var gapLeft = rect.Left - other.Right;
                 var gapTop = rect.Top - other.Bottom;
                 var gapBottom = other.Top - rect.Bottom;
-                System.Diagnostics.Debug.WriteLine($"{gapRight}, {gapLeft}, {gapTop}, {gapBottom}");
+                // System.Diagnostics.Debug.WriteLine($"{gapRight}, {gapLeft}, {gapTop}, {gapBottom}");
 
                 var minMovement = gapTop;
                 foreach (int i in new int[] { gapRight, gapLeft, gapTop, gapBottom })
@@ -117,7 +117,7 @@ namespace mg1_calvinkuo
             {
                 var gapTop = rect.Top - other.Bottom;
                 var gapBottom = other.Top - rect.Bottom;
-                System.Diagnostics.Debug.WriteLine($"{gapTop}, {gapBottom}");
+                // System.Diagnostics.Debug.WriteLine($"{gapTop}, {gapBottom}");
 
                 var minMovement = gapTop;
                 foreach (int i in new int[] { gapTop, gapBottom })
@@ -182,7 +182,7 @@ namespace mg1_calvinkuo
                 var gapLeft = rect.Left - other.Right;
                 var gapTop = rect.Top - other.Bottom;
                 var gapBottom = other.Top - rect.Bottom;
-                System.Diagnostics.Debug.WriteLine($"{gapRight}, {gapLeft}, {gapTop}, {gapBottom}");
+                // System.Diagnostics.Debug.WriteLine($"{gapRight}, {gapLeft}, {gapTop}, {gapBottom}");
 
                 var minMovement = gapRight;
                 foreach (int i in new int[] { gapRight, gapLeft, gapTop, gapBottom })
@@ -211,6 +211,7 @@ namespace mg1_calvinkuo
                 if (minMovement == gapBottom)
                 {
                     hitTop = true;
+                    System.Diagnostics.Debug.WriteLine($"hitTop!");
                 }
             }
             return other.Location;
@@ -224,7 +225,7 @@ namespace mg1_calvinkuo
                 var gapLeft = rect.Left - other.Right;
                 var gapTop = rect.Top - other.Bottom;
                 var gapBottom = other.Top - rect.Bottom;
-                System.Diagnostics.Debug.WriteLine($"{gapRight}, {gapLeft}, {gapTop}, {gapBottom}");
+                // System.Diagnostics.Debug.WriteLine($"{gapRight}, {gapLeft}, {gapTop}, {gapBottom}");
 
                 var minMovement = gapTop;
                 foreach (int i in new int[] { gapRight, gapLeft, gapTop, gapBottom })
@@ -506,14 +507,22 @@ namespace mg1_calvinkuo
             // player collision
             foreach (var gameObject in gameObjects)
             {
+                gameObject.Update();
                 var newPos = gameObject.HandleCollision(new Rectangle((int)(pos.X + 8 * scale.X), (int)(pos.Y + 6 * scale.X), (int)(8 * scale.X), (int)(15 * scale.Y)), ref veloc, ref jumping);
                 pos.X = newPos.X - 8 * scale.X;
                 pos.Y = newPos.Y - 6 * scale.X;
-                gameObject.Update();
+            }
+
+            // box landing on player
+            Box box = (Box)gameObjects[0];
+            if (box.hitTop)
+            {
+                currentAnimation = Animation.Hurt;
+                nextAnimation = Animation.Idle;
+                currentAnimationIndex = 0;
             }
 
             // kick the box
-            Box box = (Box)gameObjects[0];
             if (kicking && !flip && Math.Abs(box.Rectangle.Left - (pos.X + 16 * scale.X)) < 1 && Math.Abs(box.Rectangle.Bottom - (pos.Y + 21 * scale.Y)) < 3)
             {
                 if (Keyboard.GetState().IsKeyDown(Keys.LeftShift))
@@ -550,15 +559,7 @@ namespace mg1_calvinkuo
                 pos.X = newPos.X - 8 * scale.X;
                 pos.Y = newPos.Y - 6 * scale.X;
             }
-
-            // box landing on player
-            if (box.hitTop)
-            {
-                currentAnimation = Animation.Hurt;
-                nextAnimation = Animation.Idle;
-                currentAnimationIndex = 0;
-                box.hitTop = false;
-            }
+            box.hitTop = false;
 
             base.Update(gameTime);
         }
