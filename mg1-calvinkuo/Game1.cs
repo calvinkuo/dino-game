@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using static System.Formats.Asn1.AsnWriter;
+using static System.Net.WebRequestMethods;
 
 namespace mg1_calvinkuo
 {
@@ -60,25 +61,21 @@ namespace mg1_calvinkuo
                 System.Diagnostics.Debug.WriteLine($"{gapRight}, {gapLeft}, {gapTop}, {gapBottom}");
 
                 var minMovement = gapTop;
-                foreach (int i in new int[] { /* gapRight, gapLeft, */ gapTop, gapBottom })
+                foreach (int i in new int[] { gapRight, gapLeft, gapTop, gapBottom })
                 {
                     if (i < 0 && i > minMovement)
                     {
                         minMovement = i;
                     }
                 }
-                //if (minMovement == gapRight)
-                //{
-                //    other.Y = rect.Bottom;
-                //    veloc.Y = 0f;
-                //    jumping = true;
-                //}
-                //if (minMovement == gapLeft)
-                //{
-                //    other.Y = rect.Bottom;
-                //    veloc.Y = 0f;
-                //    jumping = true;
-                //}
+                if (minMovement == gapRight)
+                {
+                    other.X = rect.Right;
+                }
+                if (minMovement == gapLeft)
+                {
+                    other.X = rect.Left - other.Width;
+                }
                 if (minMovement == gapTop)
                 {
                     other.Y = rect.Top - other.Height;
@@ -89,7 +86,6 @@ namespace mg1_calvinkuo
                 {
                     other.Y = rect.Bottom;
                     veloc.Y = 0f;
-                    jumping = true;
                 }
             }
             return other.Location;
@@ -200,15 +196,11 @@ namespace mg1_calvinkuo
                 {
                     this.pos.X = other.Left - this.Rectangle.Width;
                     this.veloc.X = 0f;
-                    veloc.Y = 0f;
-                    jumping = true;
                 }
                 if (minMovement == gapLeft)
                 {
                     this.pos.X = other.Right;
                     this.veloc.X = 0f;
-                    veloc.Y = 0f;
-                    jumping = true;
                 }
                 if (minMovement == gapTop)
                 {
@@ -218,10 +210,48 @@ namespace mg1_calvinkuo
                 }
                 if (minMovement == gapBottom)
                 {
-                    // other.Y = rect.Bottom;
-                    // veloc.Y = 0f;
-                    // jumping = true;
                     hitTop = true;
+                }
+            }
+            return other.Location;
+        }
+        public Point HandleCollision2(Rectangle other, ref Vector2 veloc, ref bool jumping)
+        {
+            var rect = this.Rectangle;
+            if (other.Intersects(rect))
+            {
+                var gapRight = other.Left - rect.Right;
+                var gapLeft = rect.Left - other.Right;
+                var gapTop = rect.Top - other.Bottom;
+                var gapBottom = other.Top - rect.Bottom;
+                System.Diagnostics.Debug.WriteLine($"{gapRight}, {gapLeft}, {gapTop}, {gapBottom}");
+
+                var minMovement = gapTop;
+                foreach (int i in new int[] { gapRight, gapLeft, gapTop, gapBottom })
+                {
+                    if (i < 0 && i > minMovement)
+                    {
+                        minMovement = i;
+                    }
+                }
+                if (minMovement == gapRight)
+                {
+                    other.X = rect.Right;
+                }
+                if (minMovement == gapLeft)
+                {
+                    other.X = rect.Left - other.Width;
+                }
+                if (minMovement == gapTop)
+                {
+                    other.Y = rect.Top - other.Height;
+                    veloc.Y = 0f;
+                    jumping = false;
+                }
+                if (minMovement == gapBottom)
+                {
+                    other.Y = rect.Bottom;
+                    veloc.Y = 0f;
                 }
             }
             return other.Location;
@@ -316,6 +346,8 @@ namespace mg1_calvinkuo
                 new WoodenPlatform(new Vector2(100, 450)),
                 new StonePlatform(new Vector2(500, 500)),
                 new WoodenPlatform(new Vector2(950, 450)),
+                new WoodenPlatform(new Vector2(200, 675)),
+                new StonePlatform(new Vector2(750, 675)),
             };
             foreach (SpriteBox spriteBox in gameObjects)
             {
@@ -471,6 +503,7 @@ namespace mg1_calvinkuo
 
             timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
 
+            // player collision
             foreach (var gameObject in gameObjects)
             {
                 var newPos = gameObject.HandleCollision(new Rectangle((int)(pos.X + 8 * scale.X), (int)(pos.Y + 6 * scale.X), (int)(8 * scale.X), (int)(15 * scale.Y)), ref veloc, ref jumping);
@@ -479,24 +512,46 @@ namespace mg1_calvinkuo
                 gameObject.Update();
             }
 
+            // kick the box
             Box box = (Box)gameObjects[0];
+            if (kicking && !flip && Math.Abs(box.Rectangle.Left - (pos.X + 16 * scale.X)) < 1 && Math.Abs(box.Rectangle.Bottom - (pos.Y + 21 * scale.Y)) < 3)
+            {
+                if (Keyboard.GetState().IsKeyDown(Keys.LeftShift))
+                {
+                    box.veloc.X += 8f;
+                }
+                else
+                {
+                    box.veloc.X += 4f;
+                }
+            }
+            if (kicking && flip && Math.Abs(box.Rectangle.Right - (pos.X + 8 * scale.X)) < 1 && Math.Abs(box.Rectangle.Bottom - (pos.Y + 21 * scale.Y)) < 3)
+            {
+                if (Keyboard.GetState().IsKeyDown(Keys.LeftShift))
+                {
+                    box.veloc.X -= 8f;
+                }
+                else
+                {
+                    box.veloc.X -= 4f;
+                }
+            }
+
+            // box collision
             foreach (var gameObject in gameObjects[1..])
             {
                 var newPos = gameObject.HandleCollision(box.Rectangle, ref box.veloc, ref box.jumping);
                 box.pos.X = newPos.X;
                 box.pos.Y = newPos.Y;
             }
-            box.Update();
+            // ensure player does not clip box
+            if (!box.hitTop) {
+                var newPos = box.HandleCollision2(new Rectangle((int)(pos.X + 8 * scale.X), (int)(pos.Y + 6 * scale.X), (int)(8 * scale.X), (int)(15 * scale.Y)), ref veloc, ref jumping);
+                pos.X = newPos.X - 8 * scale.X;
+                pos.Y = newPos.Y - 6 * scale.X;
+            }
 
-            // kick the box
-            if (kicking && !flip && Math.Abs(box.Rectangle.Left - (pos.X + 16 * scale.X)) < 1 && Math.Abs(box.Rectangle.Bottom - (pos.Y + 21 * scale.Y)) < 3)
-            {
-                box.veloc.X += 3f;
-            }
-            if (kicking && flip && Math.Abs(box.Rectangle.Right - (pos.X + 8 * scale.X)) < 1 && Math.Abs(box.Rectangle.Bottom - (pos.Y + 21 * scale.Y)) < 3)
-            {
-                box.veloc.X -= 3f;
-            }
+            // box landing on player
             if (box.hitTop)
             {
                 currentAnimation = Animation.Hurt;
@@ -514,7 +569,11 @@ namespace mg1_calvinkuo
 
             // TODO: Add your drawing code here
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-            foreach (var gameObject in gameObjects)
+            foreach (var gameObject in gameObjects[1..])
+            {
+                gameObject.Draw(_spriteBatch);
+            }
+            foreach (var gameObject in gameObjects[..1]) // draw box last
             {
                 gameObject.Draw(_spriteBatch);
             }
