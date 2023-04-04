@@ -621,6 +621,10 @@ namespace mg1_calvinkuo
             //        System.Diagnostics.Debug.WriteLine($"{b.pos.X} {b.pos.Y}");
             //    }
             //}
+            //if (Keyboard.GetState().IsKeyDown(Keys.OemPlus))
+            //{
+            //    score += 1;
+            //}
 
             // TODO: Add your update logic here
             if (Keyboard.GetState().IsKeyUp(Keys.W))
@@ -873,6 +877,7 @@ namespace mg1_calvinkuo
         protected override void Draw(GameTime gameTime)
         {
             Color bgColor = Color.Lerp(Color.CornflowerBlue, Color.DarkOrange, score / (maxScore + 1f));
+            Color hudColor = Color.Lerp(Color.SeaGreen, Color.Sienna, score / (maxScore + 1f));
             GraphicsDevice.Clear(bgColor);
 
             // TODO: Add your drawing code here
@@ -891,7 +896,7 @@ namespace mg1_calvinkuo
             }
             _spriteBatch.Draw(dinoSheet, pos, animation[(int)currentAnimation][currentAnimationIndex], Color.White, 0f, new Vector2(0, 0), scale,
                 flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
-            _spriteBatch.Draw(solid, new Rectangle(0, GameBounds.Y, GameBounds.X, 96), Color.SeaGreen);
+            _spriteBatch.Draw(solid, new Rectangle(0, GameBounds.Y, GameBounds.X, 96), hudColor);
             if (score < maxScore)
                 _spriteBatch.DrawString(font, $"Lvl. {currentLevel} - Collected: {score}/{maxScore}", new Vector2(24, GameBounds.Y + 28), Color.White);
             else
