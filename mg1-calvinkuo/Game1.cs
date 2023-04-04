@@ -897,6 +897,7 @@ namespace mg1_calvinkuo
             _spriteBatch.Draw(dinoSheet, pos, animation[(int)currentAnimation][currentAnimationIndex], Color.White, 0f, new Vector2(0, 0), scale,
                 flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
             _spriteBatch.Draw(solid, new Rectangle(0, GameBounds.Y, GameBounds.X, 96), hudColor);
+            _spriteBatch.Draw(solid, new Rectangle(0, GameBounds.Y, GameBounds.X, (int)scale.Y), Color.Lerp(hudColor, Color.Black, 0.5f));
             if (score < maxScore)
                 _spriteBatch.DrawString(font, $"Lvl. {currentLevel} - Collected: {score}/{maxScore}", new Vector2(24, GameBounds.Y + 28), Color.White);
             else
@@ -906,7 +907,7 @@ namespace mg1_calvinkuo
             if (PuddingLarge.Collected)
             {
                 _spriteBatch.Begin(samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-                _spriteBatch.Draw(solid, new Rectangle(0, 0, GameBounds.X, GameBounds.Y), Color.Black * 0.75f);
+                _spriteBatch.Draw(solid, new Rectangle(0, 0, GameBounds.X, GameBounds.Y + 96), Color.Black * 0.75f);
                 _spriteBatch.DrawString(font, $"THE END", new Vector2(GameBounds.X / 2 - 93, GameBounds.Y / 2 - 20), Color.White);
                 _spriteBatch.DrawString(font, $"Congratulations!", new Vector2(920, GameBounds.Y + 28), Color.White);
                 _spriteBatch.End();
