@@ -13,6 +13,28 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Fonts/Pixellari.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/Pixellari.spritefont
+
+#begin Fonts/Pixellari.ttf
+/copy:Fonts/Pixellari.ttf
+
+#begin Images/pudding.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Images/pudding.png
+
 #begin Images/terrain.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -36,4 +58,19 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Images/vita.png
+
+#begin Levels/level-1.json
+/copy:Levels/level-1.json
+
+#begin Levels/level-2.json
+/copy:Levels/level-2.json
+
+#begin Levels/level-3.json
+/copy:Levels/level-3.json
+
+#begin Levels/level-4.json
+/copy:Levels/level-4.json
+
+#begin Levels/level-5.json
+/copy:Levels/level-5.json
 
